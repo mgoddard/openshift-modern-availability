@@ -5,7 +5,7 @@ them with a global load balancer and a network tunnel.  This step has the
 following prerequisites:
 
 1. A running OCP cluster deployed in AWS
-   - This cluster will become the control cluster
+   - This cluster will be the control cluster
    - You need to be logged in to it as an administrator
 1. Valid AWS credentials
 1. Sufficient quota to deploy on the AWS regions you intend to use
@@ -18,7 +18,7 @@ following prerequisites:
 ## Deploy RHACM
 
 [Red Hat Advanced Cluster Management](https://www.redhat.com/en/technologies/management/advanced-cluster-management)
-allows among other things to declaratively manage the cluster's lifecycle.
+allows, among other things, declarative cluster lifecycle management.
 
 ```shell
 oc new-project open-cluster-management
@@ -69,7 +69,7 @@ helm upgrade cluster3 ./charts/acm-aws-cluster --create-namespace -i -n cluster3
 Wait until the clusters are ready (about 40 minutes). You can watch the progress with the following command:
 
 ```shell
-watch oc get clusterdeployment --all-namespaces
+while : ; do clear ; oc get clusterdeployment --all-namespaces ; sleep 2 ; done
 ```
 
 At this point your architecture should look like the below image:
@@ -80,7 +80,7 @@ Collect the cluster metadata. This is useful if something goes wrong and you nee
 
 ```shell
 for cluster in cluster1 cluster2 cluster3; do
-  export cluster_name=$(oc get secret ${cluster}-install-config -n ${cluster} -o jsonpath='{.data.install-config\.yaml}' | base64 -d | yq -r .metadata.name )
+  export cluster_name=$(oc get secret ${cluster}-install-config -n ${cluster} -o jsonpath='{.data.install-config\.yaml}' | base64 -d | jq -r '.metadata.name')
   export cluster_id=$(oc get clusterdeployment ${cluster} -n ${cluster} -o jsonpath='{.spec.clusterMetadata.clusterID}')
   export region=$(oc get clusterdeployment ${cluster} -n ${cluster} -o jsonpath='{.spec.platform.aws.region}')
   export infra_id=$(oc get clusterdeployment ${cluster} -n ${cluster} -o jsonpath='{.spec.clusterMetadata.infraID}')
@@ -124,9 +124,9 @@ export cluster_base_domain=$(oc --context ${control_cluster} get dns cluster -o 
 export cluster_zone_id=$(oc --context ${control_cluster} get dns cluster -o jsonpath='{.spec.publicZone.id}')
 export global_base_domain=global.${cluster_base_domain#*.}
 aws route53 create-hosted-zone --name ${global_base_domain} --caller-reference $(date +"%m-%d-%y-%H-%M-%S-%N")
-export global_zone_res=$(aws route53 list-hosted-zones-by-name --dns-name ${global_base_domain} | jq -r .HostedZones[0].Id )
+export global_zone_res=$(aws route53 list-hosted-zones-by-name --dns-name ${global_base_domain} | jq -r '.HostedZones[0].Id')
 export global_zone_id=${global_zone_res##*/}
-export delegation_record=$(aws route53 list-resource-record-sets --hosted-zone-id ${global_zone_id} | jq .ResourceRecordSets[0])
+export delegation_record=$(aws route53 list-resource-record-sets --hosted-zone-id ${global_zone_id} | jq '.ResourceRecordSets[0]')
 envsubst < ./global-load-balancer-operator/delegation-record.json > /tmp/delegation-record.json
 aws route53 change-resource-record-sets --hosted-zone-id ${cluster_zone_id} --change-batch file:///tmp/delegation-record.json
 ```
