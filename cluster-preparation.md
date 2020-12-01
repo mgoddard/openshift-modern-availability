@@ -1,15 +1,24 @@
 # Cluster preparation
 
-In this step of the tutorial we ae going to stand up the clusters and configure them with a global load balancer and a network tunnel.
-This step has the following prerequisites:
+In this step of the tutorial we are going to stand up the clusters and configure
+them with a global load balancer and a network tunnel.  This step has the
+following prerequisites:
 
-1. a running OCP cluster deployed in AWS. This cluster will become the control cluster. You need to be logged-in in it as an administrator.
-2. proper aws credentials and quotas to deploy on the NA AWS regions.
-3. a ssh key and a OCP pull secret.
+1. A running OCP cluster deployed in AWS
+   - This cluster will become the control cluster
+   - You need to be logged in to it as an administrator
+1. Valid AWS credentials
+1. Sufficient quota to deploy on the AWS regions you intend to use
+   - Control cluster: 3 m4.xlarge, 6 m4.large (9 VMs)
+   - Each regional cluster: 3 c5d.4xlarge, 3 m5.xlarge, 1 m5n.xlarge, 3 m5.large (10 VMs)
+1. An SSH key (e.g. `ssh-keygen -b 2048 -t rsa -f ~/.ssh/ocp_rsa -q -N ""`)
+1. A [OCP pull secret](https://cloud.redhat.com/openshift/install/pull-secret)
+   - We'll assume you've downloaded the pull secret to `~/pullsecret.json`
 
 ## Deploy RHACM
 
-[Red Hat Advanced Cluster Management](https://www.redhat.com/en/technologies/management/advanced-cluster-management) allows among other things to declaratively manage the cluster's lifecycle.
+[Red Hat Advanced Cluster Management](https://www.redhat.com/en/technologies/management/advanced-cluster-management)
+allows among other things to declaratively manage the cluster's lifecycle.
 
 ```shell
 oc new-project open-cluster-management
@@ -17,40 +26,40 @@ oc apply -f ./acm/operator.yaml -n open-cluster-management
 oc apply -f ./acm/acm.yaml -n open-cluster-management
 ```
 
-RHACM requires significant resources, check that the RHACM pods are not stuck in `container creating` and nodes if needed.
+RHACM requires significant resources. Check that the RHACM pods are not stuck in `container creating`.
 Wait until all pods are started successfully.
 
 ## Create three managed clusters
 
-Prepare some variables
+Prepare some variables:
 
 ```shell
 export ssh_key=$(cat ~/.ssh/ocp_rsa | sed 's/^/  /')
 export ssh_pub_key=$(cat ~/.ssh/ocp_rsa.pub)
-export pull_secret=$(cat ~/git/openshift-enablement-exam/4.0/pullsecret.json)
-export aws_id=$(cat ~/.aws/credentials | grep aws_access_key_id | cut -d'=' -f 2)
-export aws_key=$(cat ~/.aws/credentials | grep aws_secret_access_key | cut -d'=' -f 2)
+export pull_secret=$(cat ~/pullsecret.json)
+export aws_id=$(cat ~/.aws/credentials | grep aws_access_key_id | awk '{print $3}')
+export aws_key=$(cat ~/.aws/credentials | grep aws_secret_access_key | awk '{print $3}')
 export base_domain=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
 export base_domain=${base_domain#*.}
 export cluster_release_image=quay.io/openshift-release-dev/ocp-release:$(oc get clusteroperator config-operator -o jsonpath='{.status.versions[0].version}')-x86_64
 ```
 
-create clusters
+Create clusters:
 
 ```shell
-export region="us-east-1"
+export region="us-east-2"
 export network_cidr="10.128.0.0/14"
 export service_cidr="172.30.0.0/16"
 envsubst < ./acm/acm-cluster-values.yaml > /tmp/values.yaml
 helm upgrade cluster1 ./charts/acm-aws-cluster --create-namespace -i -n cluster1  -f /tmp/values.yaml
 
-export region="us-east-2"
+export region="us-west-2"
 export network_cidr="10.132.0.0/14"
 export service_cidr="172.31.0.0/16"
 envsubst < ./acm/acm-cluster-values.yaml > /tmp/values.yaml
 helm upgrade cluster2 ./charts/acm-aws-cluster --create-namespace -i -n cluster2  -f /tmp/values.yaml
 
-export region="us-west-2"
+export region="us-west-1"
 export network_cidr="10.136.0.0/14"
 export service_cidr="172.32.0.0/16"
 envsubst < ./acm/acm-cluster-values.yaml > /tmp/values.yaml
