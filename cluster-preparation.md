@@ -6,7 +6,7 @@ following prerequisites:
 
 1. A running OCP cluster deployed in AWS
    - This cluster will be the control cluster
-   - You need to be logged in to it as an administrator
+   - You need to be logged in to it as an administrator (the `kubeadmin` account will work)
 1. Valid AWS credentials
 1. Sufficient quota to deploy on the AWS regions you intend to use
    - Control cluster: 3 m4.xlarge, 6 m4.large (9 VMs)
@@ -39,8 +39,7 @@ export ssh_pub_key=$(cat ~/.ssh/ocp_rsa.pub)
 export pull_secret=$(cat ~/pullsecret.json)
 export aws_id=$(cat ~/.aws/credentials | grep aws_access_key_id | awk '{print $3}')
 export aws_key=$(cat ~/.aws/credentials | grep aws_secret_access_key | awk '{print $3}')
-export base_domain=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
-export base_domain=${base_domain#*.}
+export base_domain=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}' | perl -ne 's/^[^\.]+\.//; print;')
 export cluster_release_image=quay.io/openshift-release-dev/ocp-release:$(oc get clusteroperator config-operator -o jsonpath='{.status.versions[0].version}')-x86_64
 ```
 
