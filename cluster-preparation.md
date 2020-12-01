@@ -90,7 +90,16 @@ cluster2    cluster2   cluster2                    la-cucaracha.net   false     
 cluster3    cluster3   cluster3                    la-cucaracha.net   false       cluster3-acm-aws-clus-lw8gg   2m29s
 ```
 
-At this point your architecture should look like the below image:
+After a while, the `INSTALLED` values will show as `true` and can `CTRL-C` out of that while loop:
+```
+NAMESPACE   NAME       CLUSTERNAME   CLUSTERTYPE   BASEDOMAIN         INSTALLED   INFRAID                       AGE
+cluster1    cluster1   cluster1                    la-cucaracha.net   true        cluster1-acm-aws-clus-xxz5z   47m
+cluster2    cluster2   cluster2                    la-cucaracha.net   true        cluster2-acm-aws-clus-nb6c8   47m
+cluster3    cluster3   cluster3                    la-cucaracha.net   true        cluster3-acm-aws-clus-lw8gg   46m
+```
+
+Now, you have three clusters deployed across the regions specified above.  Each one should have
+6 VMs.  The diagram below depicts the current state:
 
 ![RHACM](./media/RHACM.png)
 
