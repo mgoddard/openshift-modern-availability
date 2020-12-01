@@ -65,10 +65,29 @@ envsubst < ./acm/acm-cluster-values.yaml > /tmp/values.yaml
 helm upgrade cluster3 ./charts/acm-aws-cluster --create-namespace -i -n cluster3  -f /tmp/values.yaml
 ```
 
+Here's an example of the output from the third cluster create operation:
+```
+Release "cluster3" has been upgraded. Happy Helming!
+NAME: cluster3
+LAST DEPLOYED: Tue Dec  1 16:42:46 2020
+NAMESPACE: cluster3
+STATUS: deployed
+REVISION: 2
+TEST SUITE: None
+```
+
 Wait until the clusters are ready (about 40 minutes). You can watch the progress with the following command:
 
 ```shell
-while : ; do clear ; oc get clusterdeployment --all-namespaces ; sleep 2 ; done
+while : ; do clear ; oc get clusterdeployment --all-namespaces ; sleep 15 ; done
+```
+
+This output will have this form:
+```
+NAMESPACE   NAME       CLUSTERNAME   CLUSTERTYPE   BASEDOMAIN         INSTALLED   INFRAID                       AGE
+cluster1    cluster1   cluster1                    la-cucaracha.net   false       cluster1-acm-aws-clus-xxz5z   3m19s
+cluster2    cluster2   cluster2                    la-cucaracha.net   false       cluster2-acm-aws-clus-nb6c8   2m45s
+cluster3    cluster3   cluster3                    la-cucaracha.net   false       cluster3-acm-aws-clus-lw8gg   2m29s
 ```
 
 At this point your architecture should look like the below image:
