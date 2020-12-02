@@ -154,7 +154,8 @@ oc config use-context ${control_cluster}
 
 ## Deploy global-load-balancer-operator
 
-The [global-load-balancer-operator](https://github.com/redhat-cop/global-load-balancer-operator#global-load-balancer-operator) programs route53 based on the global routes found on the managed clusters.
+The [global-load-balancer-operator](https://github.com/redhat-cop/global-load-balancer-operator#global-load-balancer-operator)
+programs route53 based on the global routes found on the managed clusters.
 
 ### Create global zone
 
@@ -207,20 +208,35 @@ At this point your architecture should look like the below image:
 
 ## Deploy Submariner
 
-[Submariner](https://submariner.io/) creates an IPSec-based network tunnel between the managed clusters' SDNs.
+[Submariner](https://submariner.io/) creates an IPSec-based network tunnel
+between the managed clusters' Software Defined Networks (SDNs).
 
 ### Prepare nodes for submariner
+
+**NOTE:**
+
+* The `tools/openshift/ocp-ipi-aws/main.tf` file within the Submariner
+project wasn't working due to its lack of "double quotes" around the rvalues,
+so we use a [modified version](./submariner/main.tf) here.
+
+* An older version of Terraform, 0.12.x, is required. Here’s one way to do that on a Mac:
+```shell
+wget https://releases.hashicorp.com/terraform/0.12.12/terraform_0.12.12_darwin_amd64.zip
+unzip terraform_0.12.12_darwin_amd64.zip
+mv terraform /usr/local/bin/
+```
 
 ```shell
 git -C /tmp clone https://github.com/submariner-io/submariner
 for context in cluster1 cluster2 cluster3; do
-  cluster_id=$(oc --context ${context} get infrastructure cluster -o jsonpath='{.status.infrastructureName}')
-  cluster_region=$(oc --context ${context} get infrastructure cluster -o jsonpath='{.status.platformStatus.aws.region}')
-  echo $cluster_id $cluster_region
+  export cluster_id=$(oc --context ${context} get infrastructure cluster -o jsonpath='{.status.infrastructureName}')
+  export cluster_region=$(oc --context ${context} get infrastructure cluster -o jsonpath='{.status.platformStatus.aws.region}')
+  echo "$cluster_id $cluster_region"
   mkdir -p /tmp/${cluster_id}
   cp -R /tmp/submariner/tools/openshift/ocp-ipi-aws/* /tmp/${cluster_id}
-  sed -i "s/\"cluster_id\"/\"${cluster_id}\"/g" /tmp/${cluster_id}/main.tf
-  sed -i "s/\"aws_region\"/\"${cluster_region}\"/g" /tmp/${cluster_id}/main.tf
+  cat ./submariner/main.tf \
+    | perl -ne '%map = ("cluster_id" => "cluster_id", "aws_region" => "cluster_region"); s/{{(cluster_id|aws_region)}}/$ENV{$map{$1}}/eg; print;' \
+    > /tmp/${cluster_id}/main.tf
   pushd /tmp/${cluster_id}
   terraform init -upgrade=true
   terraform apply -auto-approve
