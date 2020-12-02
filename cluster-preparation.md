@@ -118,9 +118,17 @@ done
 ### Ensure you're logged in
 
 Refer to [this note](./logging_back_in.md) for further background on this login procedure.
+The values shown here are for my setup.
 
 ```shell
 oc login --token=Wm1euBZfz5h0u8O861qZAJDpxm8_tZw848GAUDp6vvk --server=https://api.ctrl.la-cucaracha.net:6443
+```
+
+Also, you'll need to refresh this login state after each loop iteration below, so save this token and server value
+for reuse:
+```shell
+token="Wm1euBZfz5h0u8O861qZAJDpxm8_tZw848GAUDp6vvk"
+server="https://api.ctrl.la-cucaracha.net:6443"
 ```
 
 ### Prepare login config contexts
@@ -139,6 +147,7 @@ for cluster in cluster1 cluster2 cluster3; do
   echo "API URL: ${url}"
   echo "console URL ${console_url}"
   echo "admin account: kubeadmin/${password}"
+  oc login --token=$token --server=$server
 done
 oc config use-context ${control_cluster}
 ```
