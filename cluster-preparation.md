@@ -219,7 +219,7 @@ between the managed clusters' Software Defined Networks (SDNs).
 project wasn't working due to its lack of "double quotes" around the rvalues,
 so we use a [modified version](./submariner/main.tf) here.
 
-* An older version of Terraform, 0.12.x, is required. Here’s one way to do that on a Mac:
+* An older version of Terraform, 0.12.x, is required. Here’s one way to install that older version on a Mac:
 ```shell
 wget https://releases.hashicorp.com/terraform/0.12.12/terraform_0.12.12_darwin_amd64.zip
 unzip terraform_0.12.12_darwin_amd64.zip
@@ -245,7 +245,7 @@ for context in cluster1 cluster2 cluster3; do
 done
 ```
 
-### Upgrade the node machine to a network optimized machine type
+### Upgrade the node VMs to network optimized machine types
 
 ```shell
 for context in cluster1 cluster2 cluster3; do
