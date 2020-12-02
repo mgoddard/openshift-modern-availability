@@ -115,6 +115,14 @@ for cluster in cluster1 cluster2 cluster3; do
 done
 ```
 
+### Ensure you're logged in
+
+Refer to [this note](./logging_back_in.md) for further background on this login procedure.
+
+```shell
+oc login --token=Wm1euBZfz5h0u8O861qZAJDpxm8_tZw848GAUDp6vvk --server=https://api.ctrl.la-cucaracha.net:6443
+```
+
 ### Prepare login config contexts
 
 ```shell
@@ -127,10 +135,10 @@ for cluster in cluster1 cluster2 cluster3; do
   oc config set-cluster ${cluster} --insecure-skip-tls-verify=true --server ${url}
   oc config set-credentials admin-${cluster} --token $(oc whoami -t)
   oc config set-context $cluster --cluster ${cluster} --user=admin-${cluster}
-  echo cluster: ${cluster}
-  echo api url: ${url}
-  echo console url ${console_url}
-  echo admin account: kubeadmin/${password}
+  echo "cluster: ${cluster}"
+  echo "API URL: ${url}"
+  echo "console URL ${console_url}"
+  echo "admin account: kubeadmin/${password}"
 done
 oc config use-context ${control_cluster}
 ```
