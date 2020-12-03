@@ -280,7 +280,7 @@ for context in cluster1 cluster2 cluster3; do
 done
 ```
 
-At this point your architecture should look like the below image:
+The diagram below represents the current state of the deployment:
 
 ![Network Tunnel](./media/Submariner.png)
 
