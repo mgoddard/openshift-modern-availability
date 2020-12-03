@@ -84,10 +84,11 @@ oc --context ${control_cluster} create secret generic vault-init -n vault --from
 ```
 
 If that last command fails due to a pre-existing secret named `vault-init` (e.g. you've done this before), you can delete it:
-(Reference: https://stackoverflow.com/questions/41937330/how-to-delete-or-overwrite-a-secret-in-openshift)
 ```
 oc --context ${control_cluster} delete secret vault-init -n vault
-``
+```
+(Reference: https://stackoverflow.com/questions/41937330/how-to-delete-or-overwrite-a-secret-in-openshift)
+
 and then rerun that last `create secret` line.
 
 **SAVE** the `$HA_UNSEAL_KEY` and `$HA_VAULT_TOKEN` values.
@@ -137,11 +138,13 @@ Raft Applied Index       69
 
 ### Access Vault UI
 
-browse to here
+Browse to here:
 
 ```shell
 echo "$VAULT_ADDR/ui"
 ```
+
+To log in, you'll need the `$HA_VAULT_TOKEN` you saved earlier.
 
 The following diagram depicts the current state:
 
