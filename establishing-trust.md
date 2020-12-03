@@ -1,8 +1,11 @@
 # Establishing Trust
 
-We need to establish some form of trust between the cluster before starting to deploy stateful workloads.
-In practice this means that the applications deployed to these clusters will have a common source for their secrets, certificates and credentials in general.
-In this step we are going to use Vault as our secret manager and we are going to deploy Vault in these cluster themselves.
+We need to establish some form of trust between the clusters before starting to
+deploy stateful workloads.  In practice this means that the applications
+deployed to these clusters will have a common source for their secrets,
+certificates and credentials in general.  In this step we are going to use
+Vault as our secret manager and we are going to deploy Vault in these cluster
+themselves.
 
 ## Deploy Vault
 
@@ -10,7 +13,7 @@ In this step we are going to use Vault as our secret manager and we are going to
 
 ```shell
 export region=$(oc --context ${control_cluster} get infrastructure cluster -o jsonpath='{.status.platformStatus.aws.region}')
-export key_id=$(aws --region ${region} kms create-key --description "used by vault" | jq -r .KeyMetadata.KeyId)
+export key_id=$(aws --region ${region} kms create-key --description "used by vault" | jq -r '.KeyMetadata.KeyId')
 aws --region ${region} kms tag-resource --key-id ${key_id} --tags TagKey=name,TagValue=vault-key
 oc --context ${control_cluster} new-project vault
 oc --context ${control_cluster} create secret generic vault-kms -n vault --from-literal=key_id=${key_id}
@@ -54,8 +57,8 @@ done
 ```shell
 HA_INIT_RESPONSE=$(oc --context ${cluster1} exec vault-0 -n vault -- vault operator init -address https://vault-0.cluster1.vault-internal.vault.svc.clusterset.local:8200 -ca-path /etc/vault-tls/vault-tls/ca.crt -format=json -recovery-shares 1 -recovery-threshold 1)
 
-HA_UNSEAL_KEY=$(echo "$HA_INIT_RESPONSE" | jq -r .recovery_keys_b64[0])
-HA_VAULT_TOKEN=$(echo "$HA_INIT_RESPONSE" | jq -r .root_token)
+HA_UNSEAL_KEY=$(echo "$HA_INIT_RESPONSE" | jq -r '.recovery_keys_b64[0]')
+HA_VAULT_TOKEN=$(echo "$HA_INIT_RESPONSE" | jq -r '.root_token')
 
 echo "$HA_UNSEAL_KEY"
 echo "$HA_VAULT_TOKEN"
