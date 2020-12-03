@@ -258,8 +258,13 @@ done
 
 ### Deploy submariner via CLI
 
+**NOTE:** This pending [issue](https://github.com/submariner-io/submariner-operator/issues/790) with Submariner on Mac
+means we'll need to do a little workaround (the `perl -ne ...` part, below).  Also, **you'll need write permission** on
+`/usr/local/bin` for this to work as written.
+
 ```shell
-curl -Ls https://get.submariner.io | VERSION=0.7.0 bash
+curl -Ls https://get.submariner.io | perl -ne 's/install -D "\${bin}" "\${dest}"$/mkdir -p "\$destdir" && cp -f "\${bin}" "\${dest}"/;print;' \
+  | VERSION=0.7.0 DESTDIR=/usr/local/bin bash
 subctl deploy-broker --kubecontext ${control_cluster} --service-discovery
 mv broker-info.subm /tmp/broker-info.subm
 for context in cluster1 cluster2 cluster3; do
@@ -267,7 +272,7 @@ for context in cluster1 cluster2 cluster3; do
 done
 ```
 
-verify submariner
+Verify submariner.  [Here](./submariner/output_of_verify.md) is some example output.
 
 ```shell
 for context in cluster1 cluster2 cluster3; do
