@@ -13,8 +13,7 @@ themselves.
 
 ```shell
 export region=$(oc --context ${control_cluster} get infrastructure cluster -o jsonpath='{.status.platformStatus.aws.region}')
-export key_id=$(aws --region ${region} kms create-key --description "used by vault" | jq -r '.KeyMetadata.KeyId')
-aws --region ${region} kms tag-resource --key-id ${key_id} --tags TagKey=name,TagValue=vault-key
+export key_id=$(aws --region ${region} kms create-key --description "used by vault" --tags TagKey=name,TagValue=vault-key | jq -r .KeyMetadata.KeyId)
 oc --context ${control_cluster} new-project vault
 oc --context ${control_cluster} create secret generic vault-kms -n vault --from-literal=key_id=${key_id}
 oc --context ${control_cluster} apply -f ./vault/vault-control-cluster-certs.yaml -n vault
