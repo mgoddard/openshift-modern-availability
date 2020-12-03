@@ -170,11 +170,22 @@ for context in cluster1 cluster2 cluster3; do
 done
 ```
 
-### Prepare vault pki
+The resulting output is shown here:
+```
+Success! Enabled kubernetes auth method at: kubernetes-cluster1/
+Success! Data written to: auth/kubernetes-cluster1/config
+Success! Data written to: auth/kubernetes-cluster1/role/cert-manager
+Success! Enabled kubernetes auth method at: kubernetes-cluster2/
+Success! Data written to: auth/kubernetes-cluster2/config
+Success! Data written to: auth/kubernetes-cluster2/role/cert-manager
+Success! Enabled kubernetes auth method at: kubernetes-cluster3/
+Success! Data written to: auth/kubernetes-cluster3/config
+Success! Data written to: auth/kubernetes-cluster3/role/cert-manager
+```
+
+### Prepare Vault PKI
 
 ```shell
-export VAULT_ADDR=https://vault.${global_base_domain}
-export VAULT_TOKEN=$(oc --context ${control_cluster} get secret vault-init -n vault -o jsonpath='{.data.root_token}'| base64 -d )
 vault secrets enable -tls-skip-verify pki
 vault secrets tune -tls-skip-verify -max-lease-ttl=87600h pki
 vault write -tls-skip-verify pki/root/generate/internal common_name=cert-manager.cluster.local ttl=87600h
@@ -194,7 +205,16 @@ for context in cluster1 cluster2 cluster3; do
 done  
 ```
 
+Output:
+```
+clusterissuer.cert-manager.io/vault-issuer created
+clusterissuer.cert-manager.io/vault-issuer created
+clusterissuer.cert-manager.io/vault-issuer created
+```
+
 ## Restart Vault pods
+
+FIXME: Why?
 
 ```shell
 for context in cluster1 cluster2 cluster3; do
@@ -212,3 +232,4 @@ for context in cluster1 cluster2 cluster3; do
   oc --context ${context} delete pvc data-vault-0 data-vault-1 data-vault-2 -n vault
 done  
 ```
+
