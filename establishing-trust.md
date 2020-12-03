@@ -84,16 +84,27 @@ oc --context ${control_cluster} create secret generic vault-init -n vault --from
 ```
 
 If that last command fails due to a pre-existing secret named `vault-init` (e.g. you've done this before), you can delete it:
+(Reference: https://stackoverflow.com/questions/41937330/how-to-delete-or-overwrite-a-secret-in-openshift)
 ```
 oc --context ${control_cluster} delete secret vault-init -n vault
 ``
 and then rerun that last `create secret` line.
 
+**SAVE** the `$HA_UNSEAL_KEY` and `$HA_VAULT_TOKEN` values.
 
 ### Verify Vault Cluster Health
 
 ```shell
 oc --context cluster1 exec vault-0 -n vault -- sh -c "VAULT_TOKEN=${HA_VAULT_TOKEN} vault operator raft list-peers -address https://vault-0.cluster1.vault-internal.vault.svc.clusterset.local:8200 -ca-path /etc/vault-tls/vault-tls/ca.crt"
+```
+
+The output from this has the following form:
+```
+Node                Address                                                            State       Voter
+----                -------                                                            -----       -----
+vault-0-cluster1    vault-0.cluster1.vault-internal.vault.svc.clusterset.local:8201    leader      true
+vault-2-cluster1    vault-2.cluster1.vault-internal.vault.svc.clusterset.local:8201    follower    true
+vault-1-cluster1    vault-1.cluster1.vault-internal.vault.svc.clusterset.local:8201    follower    true
 ```
 
 ### Testing vault external connectivity
@@ -104,15 +115,35 @@ export VAULT_TOKEN=$(oc --context ${control_cluster} get secret vault-init -n va
 vault status -tls-skip-verify
 ```
 
+This command's output is something like this:
+```
+Key                      Value
+---                      -----
+Recovery Seal Type       shamir
+Initialized              true
+Sealed                   false
+Total Recovery Shares    1
+Threshold                1
+Version                  1.5.2
+Storage Type             raft
+Cluster Name             vault-cluster-bca4ebee
+Cluster ID               7b46721b-bcce-57c0-d4ba-8a1c39b03337
+HA Enabled               true
+HA Cluster               https://vault-0.cluster1.vault-internal.vault.svc.clusterset.local:8201
+HA Mode                  active
+Raft Committed Index     69
+Raft Applied Index       69
+```
+
 ### Access Vault UI
 
 browse to here
 
 ```shell
-echo $VAULT_ADDR/ui
+echo "$VAULT_ADDR/ui"
 ```
 
-At this point your architecture should look like the below image:
+The following diagram depicts the current state:
 
 ![Vault](./media/Vault.png)
 
