@@ -3,21 +3,21 @@ kind: MachineSet
 metadata:
   labels:
     machine.openshift.io/cluster-api-cluster: ${cluster_name}
-  name: ${cluster_name}-${machine_type}-${zone}
+  name: ${name}
   namespace: openshift-machine-api
 spec:
   replicas: 1
   selector:
     matchLabels:
       machine.openshift.io/cluster-api-cluster: ${cluster_name}
-      machine.openshift.io/cluster-api-machineset: ${cluster_name}-${machine_type}-${zone}
+      machine.openshift.io/cluster-api-machineset: ${name}
   template:
     metadata:
       labels:
         machine.openshift.io/cluster-api-cluster: ${cluster_name}
         machine.openshift.io/cluster-api-machine-role: worker
         machine.openshift.io/cluster-api-machine-type: ${machine_type}
-        machine.openshift.io/cluster-api-machineset: ${cluster_name}-${machine_type}-${zone}
+        machine.openshift.io/cluster-api-machineset: ${name}
     spec:
       metadata: 
         labels:
