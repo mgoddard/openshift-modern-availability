@@ -33,7 +33,7 @@ for context in cluster1 cluster2 cluster3; do
   done
   while [ ${#azs[@]} -lt 3 ] ; do azs+=($azs[1]) ; done
   i=0
-  for zone in $azs ; do
+  for zone in "${azs[@]}" ; do
     export zone
     i=$(( i + 1 ))
     export name=${cluster_name}-${machine_type}-${zone}-${i}
