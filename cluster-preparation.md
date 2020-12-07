@@ -247,11 +247,16 @@ done
 
 ### Upgrade the node VMs to network optimized machine types
 
+The goal here is 25 Gb/s networking, so set the value of `instance_type` to a VM type which:
+* Provides this level of network performance
+* Is available in the regions you are deploying into
+
 ```shell
+instance_type="m5zn.xlarge"
 for context in cluster1 cluster2 cluster3; do
   export gateway_machine_set=$(oc --context ${context} get machineset -n openshift-machine-api | grep submariner | awk '{print $1}')
   oc --context ${context} scale machineset ${gateway_machine_set} -n openshift-machine-api --replicas=0
-  oc --context ${context} patch MachineSet ${gateway_machine_set} --type='json' -n openshift-machine-api -p='[{"op" : "replace", "path" : "/spec/template/spec/providerSpec/value/instanceType", "value" : "m5n.xlarge"}]'
+  oc --context ${context} patch MachineSet ${gateway_machine_set} --type='json' -n openshift-machine-api -p='[{"op" : "replace", "path" : "/spec/template/spec/providerSpec/value/instanceType", "value" : "'${instance_type}'"}]'
   oc --context ${context} scale machineset ${gateway_machine_set} -n openshift-machine-api --replicas=1
 done
 ```
