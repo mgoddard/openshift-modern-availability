@@ -261,6 +261,55 @@ for context in cluster1 cluster2 cluster3; do
 done
 ```
 
+**VERIFY:** At this stage, it's possible some of the VMs aren't in the expected state.  Run this as a check:
+```
+for i in {1..3} ; do echo "cluster: cluster$i" ; oc --context cluster$i get machine -n openshift-machine-api ; done
+```
+
+The output should be similar to this.  Note that one VM which shows "Failed" for "PHASE".  This is a problem.
+```
+cluster: cluster1
+NAME                                                         PHASE     TYPE          REGION      ZONE         AGE
+cluster1-acm-aws-clus-xxz5z-master-0                         Running   m5.xlarge     us-east-2   us-east-2a   6d16h
+cluster1-acm-aws-clus-xxz5z-master-1                         Running   m5.xlarge     us-east-2   us-east-2b   6d16h
+cluster1-acm-aws-clus-xxz5z-master-2                         Running   m5.xlarge     us-east-2   us-east-2c   6d16h
+cluster1-acm-aws-clus-xxz5z-submariner-gw-us-east-2c-5bbqg   Running   m5zn.xlarge   us-east-2   us-east-2c   16h
+cluster1-acm-aws-clus-xxz5z-worker-us-east-2a-n7q96          Running   m5.large      us-east-2   us-east-2a   6d16h
+cluster1-acm-aws-clus-xxz5z-worker-us-east-2b-mzrlx          Running   m5.large      us-east-2   us-east-2b   6d16h
+cluster1-acm-aws-clus-xxz5z-worker-us-east-2c-p2blb          Running   m5.large      us-east-2   us-east-2c   6d16h
+cluster: cluster2
+NAME                                                         PHASE     TYPE        REGION      ZONE         AGE
+cluster2-acm-aws-clus-nb6c8-master-0                         Running   m5.xlarge   us-west-2   us-west-2a   6d16h
+cluster2-acm-aws-clus-nb6c8-master-1                         Running   m5.xlarge   us-west-2   us-west-2b   6d16h
+cluster2-acm-aws-clus-nb6c8-master-2                         Running   m5.xlarge   us-west-2   us-west-2c   6d16h
+cluster2-acm-aws-clus-nb6c8-submariner-gw-us-west-2d-vtmgm   Failed                                         16h
+cluster2-acm-aws-clus-nb6c8-worker-us-west-2a-ldbmz          Running   m5.large    us-west-2   us-west-2a   6d16h
+cluster2-acm-aws-clus-nb6c8-worker-us-west-2b-6bcfn          Running   m5.large    us-west-2   us-west-2b   6d16h
+cluster2-acm-aws-clus-nb6c8-worker-us-west-2c-9ttwz          Running   m5.large    us-west-2   us-west-2c   6d16h
+cluster: cluster3
+NAME                                                         PHASE     TYPE          REGION      ZONE         AGE
+cluster3-acm-aws-clus-lw8gg-master-0                         Running   m5.xlarge     us-west-1   us-west-1a   6d16h
+cluster3-acm-aws-clus-lw8gg-master-1                         Running   m5.xlarge     us-west-1   us-west-1c   6d16h
+cluster3-acm-aws-clus-lw8gg-master-2                         Running   m5.xlarge     us-west-1   us-west-1a   6d16h
+cluster3-acm-aws-clus-lw8gg-submariner-gw-us-west-1c-p8xsp   Running   m5zn.xlarge   us-west-1   us-west-1c   16h
+cluster3-acm-aws-clus-lw8gg-worker-us-west-1a-4hjfm          Running   m5.large      us-west-1   us-west-1a   6d16h
+cluster3-acm-aws-clus-lw8gg-worker-us-west-1a-5vtts          Running   m5.large      us-west-1   us-west-1a   6d16h
+cluster3-acm-aws-clus-lw8gg-worker-us-west-1c-gt5mg          Running   m5.large      us-west-1   us-west-1c   6d16h
+```
+
+**DIAGNOSE:** If there is failure of this type, more detailed output is available via the following `oc` variation:
+```
+oc --context cluster2 get machine -n openshift-machine-api -o yaml
+```
+
+For the case shown above, the output of this command exposed the root cause:
+```
+message: 'error launching instance: Your requested instance type (m5zn.xlarge)
+          is not supported in your requested Availability Zone (us-west-2d). Please
+          retry your request by not specifying an Availability Zone or choosing us-west-2a,
+          us-west-2b, us-west-2c.'
+```
+
 ### Deploy submariner via CLI
 
 **NOTE:** This pending [issue](https://github.com/submariner-io/submariner-operator/issues/790) with Submariner on Mac
