@@ -46,19 +46,19 @@ export cluster_release_image=quay.io/openshift-release-dev/ocp-release:$(oc get 
 Create clusters:
 
 ```shell
-export region="us-east-2"
+export region="us-east-1"
 export network_cidr="10.128.0.0/14"
 export service_cidr="172.30.0.0/16"
 envsubst < ./acm/acm-cluster-values.yaml > /tmp/values.yaml
 helm upgrade cluster1 ./charts/acm-aws-cluster --create-namespace -i -n cluster1  -f /tmp/values.yaml
 
-export region="us-west-2"
+export region="us-east-2"
 export network_cidr="10.132.0.0/14"
 export service_cidr="172.31.0.0/16"
 envsubst < ./acm/acm-cluster-values.yaml > /tmp/values.yaml
 helm upgrade cluster2 ./charts/acm-aws-cluster --create-namespace -i -n cluster2  -f /tmp/values.yaml
 
-export region="us-west-1"
+export region="us-west-2"
 export network_cidr="10.136.0.0/14"
 export service_cidr="172.32.0.0/16"
 envsubst < ./acm/acm-cluster-values.yaml > /tmp/values.yaml
@@ -76,7 +76,7 @@ REVISION: 2
 TEST SUITE: None
 ```
 
-Wait until the clusters are ready (about 40 minutes). You can watch the progress with the following command:
+Wait until the clusters are ready (about 40 minutes). You can monitor the progress with the following command:
 
 ```shell
 while : ; do clear ; oc get clusterdeployment --all-namespaces ; sleep 15 ; done

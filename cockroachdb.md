@@ -12,13 +12,6 @@ brew install python-yq
 
 ### Provision the nodes
 
-Get AZs for a given region:
-```
-for az in $( aws ec2 describe-availability-zones --region us-west-1 | jq -r '.AvailabilityZones[].ZoneName' ) ; do echo "AZ: $az" ; done
-AZ: us-west-1a
-AZ: us-west-1c
-```
-
 ```shell
 export instance_type="c5d.4xlarge"
 for context in cluster1 cluster2 cluster3; do
